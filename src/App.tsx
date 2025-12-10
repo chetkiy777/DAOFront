@@ -5,10 +5,8 @@ import {wagmiAdapter} from "./config";
 import {generalConfig} from "./config/appConfig";
 import {AppKitProvider} from "./utils/AppKitProvider";
 import {Dashboard} from "./components/Dashboard/Dashboard";
+import {BallanceDisplay} from "./components/BallanceDisplay/BallanceDisplay.tsx";
 
-// const ERC20_ABI = [
-//     "function transfer(address to, uint256 amount) returns (bool)",
-// ]
 
 createAppKit({
     adapters: [wagmiAdapter],
@@ -21,6 +19,7 @@ function App() {
         <div className={"app-container"}>
             <AppKitProvider>
                 <Dashboard />
+                <BallanceDisplay />
             </AppKitProvider>
         </div>
     )
