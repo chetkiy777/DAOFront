@@ -13,3 +13,14 @@ export type BalanceType = {
   symbol: string
   value: bigint
 }
+
+
+export type ProposalType = {
+    id: string;
+    description: string;
+    isExecuted: boolean;
+    yesVotes: string;
+    noVotes: string;
+    createdAt: string;
+    executedAt: string | null;
+}

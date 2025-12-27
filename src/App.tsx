@@ -5,7 +5,8 @@ import {wagmiAdapter} from "./config";
 import {generalConfig} from "./config/appConfig";
 import {AppKitProvider} from "./utils/AppKitProvider";
 import {Dashboard} from "./components/Dashboard/Dashboard";
-import {BallanceDisplay} from "./components/BallanceDisplay/BallanceDisplay.tsx";
+import {DAPPLayout} from "./layouts/DAPPLayout.tsx";
+import {WalletConnection} from "./components/WalletConnection.tsx";
 
 
 createAppKit({
@@ -18,8 +19,10 @@ function App() {
     return (
         <div className={"app-container"}>
             <AppKitProvider>
-                <Dashboard />
-                <BallanceDisplay />
+                <WalletConnection />
+                <DAPPLayout>
+                    <Dashboard />
+                </DAPPLayout>
             </AppKitProvider>
         </div>
     )
