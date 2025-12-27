@@ -1,10 +1,14 @@
 import {useAppKitAccount, useAppKitNetworkCore, useAppKitProvider, type Provider} from "@reown/appkit/react";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {BrowserProvider, formatEther} from "ethers";
-import {useDisconnect, useSwitchChain} from "wagmi";
+import {useBalance, useDisconnect, useReadContract, useSwitchChain} from "wagmi";
 import styles from "./styles.module.css";
+import type {Address} from "viem";
 import {WalletConnection} from "../WalletConnection";
 import {networks} from "../../config";
+import {BallanceDisplay} from "../BallanceDisplay/BallanceDisplay.tsx";
+import {CONTRACT_ADDRESSES, CONTRACTS, getContractInfo} from "../../contracts";
+import {CreateProposalForm} from "../Forms/createProposalForm.tsx";
 
 export const Dashboard = () => {
     const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
@@ -18,7 +22,31 @@ export const Dashboard = () => {
     const { switchChain } = useSwitchChain();
     const { disconnect } = useDisconnect();
 
+
+
+
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [canCreateProposal, setCanCreateProposal] = useState(false);
+
+    const constractInfo = getContractInfo(CONTRACTS.DAO_CONTRACT);
+
+    const { data: minTokenToCreateProposal } = useReadContract({
+        address: constractInfo.address as `0x${string}`,
+        abi: constractInfo.abi,
+        functionName: 'minTokenToCreateProposal',
+    }) as { data?: bigint }
+
+    const { data: tokenBalance} = useBalance({
+        address: address as Address,
+        token: CONTRACT_ADDRESSES[CONTRACTS.TOKEN_CONTRACT]
+    });
+
+
     const hoodiChainId = 560048;
+
+
+
+
 
     const handleDisconnect = useCallback(() => {
         disconnect();
@@ -50,9 +78,8 @@ export const Dashboard = () => {
             const accounts = await provider.send("eth_requestAccounts", []);
             const network = await provider.getNetwork();
 
-            if (accounts.length > 0) {
-                console.log(accounts);
 
+            if (accounts.length > 0) {
                 setAvailableAccounts(accounts);
                 const currentAccount = accounts[0];
                 setSelectedAccount(currentAccount);
@@ -65,7 +92,15 @@ export const Dashboard = () => {
     }, [walletProvider, chainId, getBalance]);
 
     useEffect(() => {
+        if (tokenBalance && minTokenToCreateProposal) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setCanCreateProposal(tokenBalance?.value  >= minTokenToCreateProposal);
+        }
+    }, [tokenBalance?.value, minTokenToCreateProposal]);
+
+    useEffect(() => {
         if (isConnected) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             connectAndFetchData();
         }
     }, [isConnected, connectAndFetchData]);
@@ -147,11 +182,24 @@ export const Dashboard = () => {
                 </div>
             )}
 
+
+            <BallanceDisplay />
+
+
             <div className={styles.btnWrapper}>
                 <WalletConnection />
                 {address &&  <button onClick={handleDisconnect}>Disconnect</button>}
                 {isChainError && <button onClick={switchToHoodi}>Switch to Hoodi</button>}
             </div>
+
+            <section>
+                <button onClick={() => setShowCreateForm(true)} disabled={!canCreateProposal}>Create Proposal</button>
+                {!canCreateProposal && <pre>(You need more governance tokens to create a proposal)</pre>}
+                {showCreateForm && (
+                    <CreateProposalForm open={showCreateForm} onClose={() => setShowCreateForm(false)} />
+                )}
+            </section>
+
         </div>
     );
 }
